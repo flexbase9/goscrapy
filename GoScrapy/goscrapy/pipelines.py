@@ -12,6 +12,8 @@ import codecs
 from model.config import DBSession
 from model.config import Redis
 from model.item import Item
+import os
+from urlparse import urlparse
 
 class GoscrapyPipeline(object):
     def process_item(self, item, spider):
@@ -54,12 +56,16 @@ class SaveImagesPipeline(ImagesPipeline):
         image_paths=[x['path'] for ok,x in results if ok]
         if not image_paths:
             raise DropItem('Item contains no images')
-        item['main_image']=image_paths
+        item['main_image']=','.join(image_paths)
         return item
     
     def file_path(self, request, response=None, info=None):
-        image_guid = request.url.split('/')[-1]
-        return 'full/%s' % (image_guid)
+        parsed_uri=urlparse(request.url)
+        domain='{uri.netloc}'.format(uri=parsed_uri)
+        image_name = request.url.split('/')[-1]
+        project_path=os.path.dirname(os.path.abspath(__file__))
+        
+        return '%s/%s/images/%s' % (project_path,domain, image_name)
 
 
 class JsonWriterPipeline(object):
