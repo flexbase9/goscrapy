@@ -27,6 +27,7 @@ settings.set("ITEM_PIPELINES",{'pipelines.DuplicatesPipeline':200,
                                'pipelines.SaveImagesPipeline':300})
 settings.set("SPIDER_MIDDLEWARES",{"scrapy.spidermiddlewares.referer.RefererMiddleware":200})
 
+
 db=DBSession()
 rules=db.query(Rule).filter(Rule.enable==1)
 for rule in rules:
