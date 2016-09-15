@@ -6,5 +6,4 @@ encoding//goscrapy/model/rule.py=utf-8
 encoding//goscrapy/pipelines.py=utf-8
 encoding//goscrapy/run.py=utf-8
 encoding//goscrapy/settings.py=utf-8
-encoding//goscrapy/spiders/amz_spider.py=utf-8
 encoding//goscrapy/spiders/deep_spider.py=utf-8

@@ -36,8 +36,7 @@ class DataBasePipeline(object):
         i=Item(name=item['name'].encode('utf-8'),description = item['description'].encode('utf-8'),price = item['price'].encode('utf-8'),
                special = item['special'].encode('utf-8'),options = item['options'].encode('utf-8'),main_image_link = item['main_image_link'].encode('utf-8'),
                multiple_images_link = item['multiple_images_link'].encode('utf-8'),category = item['category'].encode('utf-8'),images_path = item['images_path'].encode('utf-8'),
-               download = item['download'].encode('utf-8'),main_image = item['main_image'].encode('utf-8'),multiple_image = item['multiple_image'].encode('utf-8'),
-               sku=item['sku'].encode('utf-8'),from_url = item['from_url'].encode('utf-8'))
+               download = item['download'].encode('utf-8'),main_image = item['main_image'].encode('utf-8'),sku=item['sku'].encode('utf-8'),from_url = item['from_url'].encode('utf-8'))
         self.session.add(i)
         self.session.commit()
         

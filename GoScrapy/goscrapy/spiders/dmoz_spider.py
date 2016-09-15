@@ -2,7 +2,7 @@ from goscrapy.items import DmozItem
 import scrapy
 from scrapy.http import Request
 from twisted.internet.error import DNSLookupError
-
+from scrapy.linkextractor import LinkExtractor
 
 class DmozSpider(scrapy.Spider):
     name="dmoz"
