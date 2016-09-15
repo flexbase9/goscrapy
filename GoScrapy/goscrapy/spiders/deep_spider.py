@@ -52,6 +52,7 @@ class DeepSpider(CrawlSpider):
         
         item = Item()
         
+        
         item['parent_url'] = response.meta['item']['parent_url']
         item['from_url'] = response.url
         
