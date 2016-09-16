@@ -12,7 +12,6 @@ import codecs
 from model.config import DBSession
 from model.config import Redis
 from model.item import Item
-import os
 from urlparse import urlparse
 
 class GoscrapyPipeline(object):
@@ -36,7 +35,7 @@ class DataBasePipeline(object):
         i=Item(name=item['name'].encode('utf-8'),description = item['description'].encode('utf-8'),price = item['price'].encode('utf-8'),
                special = item['special'].encode('utf-8'),options = item['options'].encode('utf-8'),main_image_link = item['main_image_link'].encode('utf-8'),
                multiple_images_link = item['multiple_images_link'].encode('utf-8'),category = item['category'].encode('utf-8'),images_path = item['images_path'].encode('utf-8'),
-               download = item['download'].encode('utf-8'),main_image = item['main_image'].encode('utf-8'),sku=item['sku'].encode('utf-8'),from_url = item['from_url'].encode('utf-8'))
+               download = item['download'].encode('utf-8'),main_images = item['main_images'].encode('utf-8'),sku=item['sku'].encode('utf-8'),from_url = item['from_url'].encode('utf-8'))
         self.session.add(i)
         self.session.commit()
         
@@ -46,25 +45,37 @@ class DataBasePipeline(object):
 
 class SaveImagesPipeline(ImagesPipeline):
     
+    def uri_validator(self,x):
+        try:
+            result=urlparse(x)
+            return True if result.scheme else False
+        except:
+            return False
+    
     def get_media_requests(self, item, info):
-        all_images_links=[ url for url in (item['main_image_link'].split(",") + item['multiple_images_link'].split(",")) if url !="" ] 
+        
+        all_images_links=[ url for url in (item['main_image_link'].split(",") + item['multiple_images_link'].split(",")) if url !="" ]
+        parsed_uri=urlparse(item['from_url'])
+        domain='{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
         for image_url in all_images_links:
-            yield Request(image_url)
+            if not self.uri_validator(image_url):
+                image_url=domain + image_url
+            yield Request(image_url,meta={'image_names':item['name']})
             
     def item_completed(self, results, item, info):
         image_paths=[x['path'] for ok,x in results if ok]
         if not image_paths:
             raise DropItem('Item contains no images')
-        item['main_image']=','.join(image_paths)
+        item['main_images']=','.join(image_paths)
+        print 'Whole Data:%s ' % item
         return item
     
     def file_path(self, request, response=None, info=None):
         parsed_uri=urlparse(request.url)
         domain='{uri.netloc}'.format(uri=parsed_uri)
         image_name = request.url.split('/')[-1]
-        project_path=os.path.dirname(os.path.abspath(__file__))
         
-        return '%s/%s/images/%s' % (project_path,domain, image_name)
+        return '%s/images/%s' % (domain, image_name)
 
 
 class JsonWriterPipeline(object):

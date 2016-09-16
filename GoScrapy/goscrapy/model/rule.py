@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base=declarative_base()
 
-class Rule(Base):
+class Regular(Base):
     __tablename__ = 'rules'
     
     id=Column(Integer,primary_key=True)

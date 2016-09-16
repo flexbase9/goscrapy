@@ -16,7 +16,7 @@ NEWSPIDER_MODULE = 'goscrapy.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'goscrapy (+http://www.yourdomain.com)'
+USER_AGENT = 'Mozilla/5.0 (Windows NT 6.2;Win64; x64) AppleWebKit/537.36 (KHTML,like Gecko) Chrome/32.0.1667.0 Safari/537.36'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -27,7 +27,7 @@ ROBOTSTXT_OBEY = True
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-#DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 1
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
@@ -46,9 +46,9 @@ ROBOTSTXT_OBEY = True
 
 # Enable or disable spider middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
-#    'goscrapy.middlewares.MyCustomSpiderMiddleware': 543,
-#}
+SPIDER_MIDDLEWARES = {
+    'scrapy.spidermiddlewares.referer.RefererMiddleware': 200,
+}
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
@@ -64,10 +64,10 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'goscrapy.pipelines.SomePipeline': 300,
-#}
-
+ITEM_PIPELINES = {'goscrapy.pipelines.DataBasePipeline':400,
+                  'goscrapy.pipelines.SaveImagesPipeline':300}
+import os
+IMAGES_STORE=os.path.dirname(os.path.abspath(__file__))
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True
