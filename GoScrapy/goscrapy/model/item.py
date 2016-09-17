@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, Integer, DateTime
 from sqlalchemy.ext.declarative import declarative_base
-
+import datetime
 Base=declarative_base()
 
 class Item(Base):
@@ -22,4 +22,6 @@ class Item(Base):
     main_images = Column(String)
     sku = Column(String)
     parent_url=Column(String)
+    created=Column(DateTime(timezone=True),default=datetime.datetime.now())
+    updated=Column(DateTime(timezone=True),onupdate=datetime.datetime.now())
     from_url = Column(String)
