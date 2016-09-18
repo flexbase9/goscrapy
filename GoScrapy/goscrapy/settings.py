@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from scrapy.settings.default_settings import LOG_LEVEL
+from scrapy.settings.default_settings import LOG_LEVEL, DUPEFILTER_CLASS
 
 # Scrapy settings for goscrapy project
 #
@@ -53,9 +53,9 @@ SPIDER_MIDDLEWARES = {
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    'goscrapy.middlewares.MyCustomDownloaderMiddleware': 543,
-#}
+DOWNLOADER_MIDDLEWARES = {
+    'goscrapy.middlewares.DeepDownloaderMiddleware': 543,
+}
 
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html
@@ -69,8 +69,9 @@ ITEM_PIPELINES = {'goscrapy.pipelines.DataBasePipeline':400,
                   'goscrapy.pipelines.SaveImagesPipeline':300}
 import os
 IMAGES_STORE=os.path.dirname(os.path.abspath(__file__))
-LOG_LEVEL = 'INFO'
-JOBDIR = 'deep_spider'
+LOG_LEVEL = 'DEBUG'
+#DUPEFILTER_CLASS='goscrapy.duplicate_filter.DeepFilter'
+#JOBDIR = 'deep_spider'
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True

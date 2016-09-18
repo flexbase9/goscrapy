@@ -3,9 +3,11 @@ import scrapy
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from scrapy.http import Request
-from goscrapy.model.config import DBSession,response_output
-from goscrapy.model.rule import Regular
-from goscrapy.model.item import Item as ItemData
+from model.config import DBSession, response_output
+from model.rule import Regular
+from model.item import Item as ItemData
+import time
+import re
 
 
 class Item(scrapy.Item):
@@ -39,10 +41,14 @@ class DeepSpider(CrawlSpider):
         rule_list = []
         if rule.next_page:
             rule_list.append(Rule(LinkExtractor(restrict_xpaths=rule.next_page.split(','))))
-        rule_list.append(Rule(LinkExtractor(allow=rule.allow_url.split(','), restrict_xpaths=rule.extract_from.split(',')), callback="parse_item"))
+        rule_list.append(Rule(LinkExtractor(allow=rule.allow_url.split(','), restrict_xpaths=rule.extract_from.split(',')), callback="parse_item", process_request="process_request"))
         self.rules = tuple(rule_list)
-        super(DeepSpider, self).__init__()
         self.count = 0
+        super(DeepSpider, self).__init__()
+    
+    def set_crawler(self, crawler):
+        super(DeepSpider, self).set_crawler(self, crawler)
+        
         
     def make_requests_from_url(self, url):
         item = Item()
@@ -63,43 +69,58 @@ class DeepSpider(CrawlSpider):
             self.db.commit()
         response.meta['rule'] = self.rule
         item = set_deep_item(item, response)
-        
-        print 'Crawled Url (Total:%s): %s' % (self.count, response.url)    
-        return item        
+        slap_time = (time.time() - self.settings['START_TIME']) / 60
+        print 'Crawled Url (Total:%s - %d Minute): %s' % (self.count, slap_time, response.url)    
+        return item   
+    
+    def process_request(self, request):
+        new_url = request.url
+        string = self.rule.filter_url
+        if string:
+            string = string.replace('\,', '~~~~~').replace('\:', '!!!!!')
+            groups = string.split(',')
+            for g in groups:
+                _g = g.split(':')
+                if len(_g) == 2:
+                    new_url = re.sub(_g[0].replace('~~~~~', ',').replace('!!!!!', ':'), _g[1].replace('~~~~~', ',').replace('!!!!!', ':'), new_url)
+                elif len(_g) == 1:
+                    new_url = re.sub(_g[0].replace('~~~~~', ',').replace('!!!!!', ':'), '', new_url)
+        request = request.replace(url=new_url)
+        return request
 
-def set_deep_item(item,response):
+def set_deep_item(item, response):
         item['from_url'] = response.url
-        rule=response.meta['rule']
+        rule = response.meta['rule']
         
-        item['parent_url'] = response.request.headers.get('referer',None)
+        item['parent_url'] = response.request.headers.get('referer', None)
         
-        item['name'] = response_output(rule.name_xpath,response)             
+        item['name'] = response_output(rule.name_xpath, response)             
         
-        item['description'] = response_output(rule.description_xpath,response)             
+        item['description'] = response_output(rule.description_xpath, response)             
         
-        item['price'] = response_output(rule.price_xpath,response)       
+        item['price'] = response_output(rule.price_xpath, response)       
         
-        item['special'] = response_output(rule.special_xpath,response)                  
+        item['special'] = response_output(rule.special_xpath, response)                  
         
-        item['options'] = response_output(rule.options_xpath,response)                       
+        item['options'] = response_output(rule.options_xpath, response)                       
         
-        item['main_image_link'] = response_output(rule.main_image_link_xpath,response)                     
+        item['main_image_link'] = response_output(rule.main_image_link_xpath, response)                     
         
-        item['multiple_images_link'] = response_output(rule.multiple_images_link_xpath,response)                  
+        item['multiple_images_link'] = response_output(rule.multiple_images_link_xpath, response)                  
         
         item['category'] = response_output(rule.category_xpath, response)                
         
-        item['images_path'] = response_output(rule.images_path,response)                 
+        item['images_path'] = response_output(rule.images_path, response)                 
         
         item['download'] = rule.download if rule.download else 0                    
         
-        item['sku'] = response_output(rule.sku_xpath,response)
+        item['sku'] = response_output(rule.sku_xpath, response)
             
         return item
 
-def test_deep_item(response,site_name):
-    item=Item()
-    db=DBSession()
+def test_deep_item(response, site_name):
+    item = Item()
+    db = DBSession()
     rule = db.query(Regular).filter(Regular.name == site_name).first()
     response.meta['rule'] = rule
     print '%s' % set_deep_item(item, response)

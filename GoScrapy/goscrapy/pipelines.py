@@ -71,17 +71,17 @@ class SaveImagesPipeline(ImagesPipeline):
         for image_url in all_images_links:
             if not self.uri_validator(image_url):
                 image_url = domain + image_url
-            yield Request(image_url, meta={'image_names':item['name'],'images_path':item['images_path']})
+            yield Request(image_url, meta={'image_names':item['name'],'images_path':item['images_path'],'from_url':item['from_url']})
             
     def item_completed(self, results, item, info):
         image_paths = ['/'.join(x['path'].split('/')[1:]) for ok, x in results if ok]
         if not image_paths:
             raise DropItem('Item contains no images')
-        item['main_images'] = ','.join(image_paths)
+        item['main_images'] = ','.join(set(image_paths))
         return item
     
     def file_path(self, request, response=None, info=None):
-        parsed_uri = urlparse(request.url)
+        parsed_uri = urlparse(request.meta['from_url'])
         domain = '{uri.netloc}'.format(uri=parsed_uri)
         hashed_url=hashlib.md5(request.url)
         image_name = request.url.split('/')[-1]

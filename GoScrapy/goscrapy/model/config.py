@@ -3,6 +3,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import redis
+import re
 
 engine = create_engine('mysql+mysqlconnector://crawl:74108520@localhost:3306/crawl')
 DBSession=sessionmaker(bind=engine)
@@ -26,10 +27,16 @@ def response_output(xpath,response):
     xpath=__format_xpath(xpath)
     result=''
     if xpath.has_key('xpath'):
-            response_result=response.xpath(xpath['xpath']).extract()
+        response_result=response.xpath(xpath['xpath']).extract()
     elif xpath.has_key('css'):
-            response_result=response.css(xpath['css']).extract()        
+        response_result=response.css(xpath['css']).extract() 
+    elif xpath.has_key('re'):
+        response_result = re.compile(xpath['re']).findall(response.body)
+         
+               
     if response_result:
+        if xpath.has_key('strip'):
+            response_result=[x.strip(" \t\n\r") for x in response_result]
         if xpath.has_key('output'):
             delimitor=','
             if  xpath.has_key('delimitor'):
@@ -50,8 +57,6 @@ def response_output(xpath,response):
                 result=result.replace(_replace_word[0].replace('~~~~~','=').replace('`````',','), _replace_word[1].replace('~~~~~','=').replace('`````',','))
             elif len(_replace_word)==1:
                 result=result.replace(_replace_word[0].replace('~~~~~','=').replace('`````',','),'')
-    if xpath.has_key('strip'):
-        result=result.strip(" \t\n\r")
     if xpath.has_key('path_format'):
         result=''.join([a for a in result.replace(" ","-").lower() if a.isalpha() or a.isdigit() or a=='-'])
     return result
