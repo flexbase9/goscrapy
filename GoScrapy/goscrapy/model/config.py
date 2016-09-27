@@ -4,13 +4,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import redis
 import re
+from database import sql_scheme
 
-engine = create_engine('mysql+mysqlconnector://crawl:74108520@localhost:3306/crawl')
+engine = create_engine(sql_scheme)
 DBSession=sessionmaker(bind=engine)
 Redis=redis.StrictRedis(host='localhost')
 
 def __format_xpath(string,key=None):
-    string=string.replace('\;','~~~~~').replace('\:','!!!!!')
+    string=string.replace('\;','~~~~~').replace('\:','!!!!!').strip(';')
     groups={"xpath": string}
     if(True if ":" in string else False):
         groups=dict([e.split(":") for e in string.split(';')])
@@ -26,6 +27,7 @@ def __format_xpath(string,key=None):
 def response_output(xpath,response):
     xpath=__format_xpath(xpath)
     result=''
+    
     if xpath.has_key('xpath'):
         response_result=response.xpath(xpath['xpath']).extract()
     elif xpath.has_key('css'):
@@ -33,10 +35,12 @@ def response_output(xpath,response):
     elif xpath.has_key('re'):
         response_result = re.compile(xpath['re']).findall(response.body)
          
-               
     if response_result:
         if xpath.has_key('strip'):
             response_result=[x.strip(" \t\n\r") for x in response_result]
+        if xpath.has_key('valid'):
+            response_result=[x for x in response_result if len(x)>0]
+            
         if xpath.has_key('output'):
             delimitor=','
             if  xpath.has_key('delimitor'):

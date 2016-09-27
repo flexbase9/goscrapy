@@ -30,3 +30,7 @@ class Regular(Base):
     images_path = Column(String)
     download = Column(String)
     sku_xpath = Column(String)
+    export_fields=Column(String)
+    
+    def __repr__(self):
+        return '<Regular %r>' % self.name

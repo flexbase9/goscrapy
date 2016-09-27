@@ -3,14 +3,15 @@ import scrapy
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from scrapy.http import Request
-from model.config import DBSession, response_output
-from model.rule import Regular
-from model.item import Item as ItemData
+from ..model.config import DBSession, response_output
+from ..model.rule import Regular
+from ..model.item import Item as ItemData
 import time
 import re
 
 
 class Item(scrapy.Item):
+    site_name=scrapy.Field()
     name = scrapy.Field()
     description = scrapy.Field()
     price = scrapy.Field()
@@ -64,7 +65,7 @@ class DeepSpider(CrawlSpider):
         item = Item()
         _item = self.db.query(ItemData).filter(ItemData.from_url == response.url).first()
         if not _item:
-            _i = ItemData(from_url=response.url)
+            _i = ItemData(from_url=response.url,site_name=self.name)
             self.db.add(_i)
             self.db.commit()
         response.meta['rule'] = self.rule
@@ -87,12 +88,16 @@ class DeepSpider(CrawlSpider):
                     new_url = re.sub(_g[0].replace('~~~~~', ',').replace('!!!!!', ':'), '', new_url)
         request = request.replace(url=new_url)
         return request
+    def closed_handler(self, spider):
+        pass
 
 def set_deep_item(item, response):
         item['from_url'] = response.url
         rule = response.meta['rule']
         
         item['parent_url'] = response.request.headers.get('referer', None)
+        
+        item['site_name'] =rule.name
         
         item['name'] = response_output(rule.name_xpath, response)             
         

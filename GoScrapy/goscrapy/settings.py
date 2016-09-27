@@ -65,10 +65,12 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {'goscrapy.pipelines.DataBasePipeline':400,
-                  'goscrapy.pipelines.SaveImagesPipeline':300}
+#===============================================================================
+# ITEM_PIPELINES = {'goscrapy.pipelines.DataBasePipeline':400,
+#                   'goscrapy.pipelines.SaveImagesPipeline':300}
+#===============================================================================
 import os
-IMAGES_STORE=os.path.dirname(os.path.abspath(__file__))
+IMAGES_STORE=os.path.join(os.path.dirname(os.path.abspath(__file__)),'download')
 LOG_LEVEL = 'DEBUG'
 #DUPEFILTER_CLASS='goscrapy.duplicate_filter.DeepFilter'
 #JOBDIR = 'deep_spider'

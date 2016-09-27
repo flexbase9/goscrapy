@@ -9,6 +9,7 @@ class Item(Base):
     __tablename__='items'
     
     id=Column(Integer,primary_key=True)
+    site_name=Column(String)
     name=Column(String)
     description = Column(String)
     price = Column(String)
